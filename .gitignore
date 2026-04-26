@@ -42,3 +42,16 @@ desktop.ini
 # Railway / Vercel
 .vercel/
 .railway/
+
+# Claude Code local config (tool permissions — not project code)
+.claude/settings.local.json
+
+# Extra env file patterns
+frontend/.env
+frontend/.env.local
+*.env.local
+
+# Secrets / credentials — belt-and-suspenders
+*secret*
+*credential*
+*private_key*
