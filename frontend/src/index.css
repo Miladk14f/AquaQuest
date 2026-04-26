@@ -1,17 +1,57 @@
 @import "tailwindcss";
 
-/* Leaflet z-index fix to stay below our sticky nav */
+/* ── Custom design tokens (Tailwind v4 @theme) ───────────────────────────── */
+@theme {
+  /* Colors */
+  --color-teal:        #1D9E75;
+  --color-teal-light:  #E1F5EE;
+  --color-teal-dark:   #0F6E56;
+
+  --color-ocean:       #378ADD;
+  --color-ocean-light: #E6F1FB;
+  --color-ocean-dark:  #185FA5;
+
+  --color-amber:       #EF9F27;
+  --color-amber-light: #FAEEDA;
+  --color-amber-dark:  #BA7517;
+
+  --color-coral:       #D85A30;
+  --color-coral-light: #FAECE7;
+  --color-coral-dark:  #993C1D;
+
+  /* Typography */
+  --font-sans: Inter, system-ui, sans-serif;
+
+  /* Animations */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce-in:  bounceIn 0.5s ease-out;
+  --animate-fade-in:    fadeIn 0.3s ease-out;
+}
+
+/* Keyframes referenced by custom animations */
+@keyframes bounceIn {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Global resets ───────────────────────────────────────────────────────── */
+
+/* Leaflet z-index fix — keep map controls below sticky nav */
 .leaflet-top,
 .leaflet-bottom {
   z-index: 400 !important;
 }
 
-/* Smooth scrolling everywhere */
 html {
   scroll-behavior: smooth;
 }
 
-/* Focus ring consistent with design system */
 *:focus-visible {
   outline: 2px solid #1D9E75;
   outline-offset: 2px;
