@@ -67,10 +67,10 @@ export default function About() {
             { step: "6", title: "Zero cost infrastructure",    desc: "All satellite data is EU open data via Copernicus. AI via NVIDIA NIM free tier. Hosting via Vercel + Railway free tiers." },
           ].map(({ step, title, desc }) => (
             <div key={step} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <span className="inline-block w-7 h-7 rounded-full bg-teal text-white text-xs font-bold
+              <div className="w-7 h-7 rounded-full bg-teal text-white text-xs font-bold
                 flex items-center justify-center mb-3">
                 {step}
-              </span>
+              </div>
               <p className="font-semibold text-gray-900 mb-1 text-sm">{title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
             </div>
@@ -91,10 +91,10 @@ export default function About() {
                 <th className="text-left px-4 py-3 hidden md:table-cell">Threshold</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {INDICES.map(row => (
                 <tr key={row.name} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-bold text-ocean font-mono text-xs">{row.name}</td>
+                  <td className="px-4 py-3 font-bold text-ocean-dark text-sm">{row.name}</td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-500 hidden sm:table-cell">{row.formula}</td>
                   <td className="px-4 py-3 text-gray-700">{row.detects}</td>
                   <td className="px-4 py-3 text-gray-400 text-xs hidden md:table-cell">{row.threshold}</td>
@@ -118,7 +118,7 @@ export default function About() {
                 <th className="text-right px-4 py-3">Cost</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {DATA_SOURCES.map(row => (
                 <tr key={row.name} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-800">{row.name}</td>
