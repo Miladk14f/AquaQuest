@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Leaflet z-index fix to stay below our sticky nav */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 400 !important;
+}
+
+/* Smooth scrolling everywhere */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus ring consistent with design system */
+*:focus-visible {
+  outline: 2px solid #1D9E75;
+  outline-offset: 2px;
+}
