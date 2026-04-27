@@ -35,7 +35,7 @@ def get_pollution_observations(
                 f"{BASE}/observations/",
                 params=params,
                 headers={"Accept-Language": "nl"},
-                timeout=10,
+                timeout=5,
             )
             if resp.status_code == 200:
                 all_obs.extend(resp.json().get("results", []))
@@ -44,7 +44,7 @@ def get_pollution_observations(
 
     pollution_obs = []
     for obs in all_obs:
-        notes = (obs.get("notes", "") + " " + obs.get("species_name", "")).lower()
+        notes = ((obs.get("notes") or "") + " " + (obs.get("species_name") or "")).lower()
         if any(kw in notes for kw in POLLUTION_KEYWORDS):
             pollution_obs.append({
                 "date":    obs.get("date"),

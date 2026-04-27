@@ -69,11 +69,7 @@ def analyse_and_select_quests(satellite_data: list) -> dict:
             {"role": "user",   "content": user_msg},
         ],
         temperature=0.2,
-        max_tokens=2048,
-        extra_body={"chat_template_kwargs": {
-            "thinking":        True,
-            "reasoning_effort": "high",
-        }},
+        max_tokens=1024,
         stream=True,
     )
 
