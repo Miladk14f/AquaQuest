@@ -37,14 +37,19 @@ OUTPUT FORMAT — return ONLY valid JSON, no other text:
     "satellite_evidence": "Specific numbers explaining why selected",
     "what_to_clean": "Exact description for app users — what they will find",
     "urgency": "high|medium",
-    "citizen_confirmed": true
+    "citizen_confirmed": false
   },
-  "quest_b": { "zone": "Zone name", "city": "City name", "lat": 0.0, "lng": 0.0,
+  "quest_b": {
+    "zone": "Zone name",
+    "city": "City name",
+    "lat": 0.0,
+    "lng": 0.0,
     "pollution_type": "floating_plastic|algae_bloom|mixed|turbidity",
     "satellite_evidence": "Specific numbers explaining why selected",
     "what_to_clean": "Exact description for app users — what they will find",
     "urgency": "high|medium",
-    "citizen_confirmed": true },
+    "citizen_confirmed": false
+  },
   "reasoning": "Full explanation of selection logic with satellite numbers",
   "week_summary": "One sentence for the app push notification"
 }"""
@@ -54,37 +59,33 @@ def get_client() -> OpenAI:
     return OpenAI(
         base_url="https://integrate.api.nvidia.com/v1",
         api_key=os.environ["NVIDIA_API_KEY"],
+        timeout=60.0,
     )
 
 
 def analyse_and_select_quests(satellite_data: list) -> dict:
-    client        = get_client()
-    user_msg      = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}"
-    full_response = ""
+    client   = get_client()
+    user_msg = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}"
+
+    print("  [ai] Calling DeepSeek API (non-streaming, 60s timeout)...")
 
     completion = client.chat.completions.create(
-        model="deepseek-ai/deepseek-v4-pro",
+        model="deepseek-ai/deepseek-r1",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user",   "content": user_msg},
         ],
         temperature=0.2,
         max_tokens=1024,
-        stream=True,
+        stream=False,
     )
 
-    for chunk in completion:
-        if not getattr(chunk, "choices", None):
-            continue
-        c = chunk.choices[0].delta.content
-        if c:
-            full_response += c
+    full_response = completion.choices[0].message.content
+    print(f"  [ai] Got response ({len(full_response)} chars)")
 
-    # Parse the JSON response
     try:
         return json.loads(full_response.strip())
     except json.JSONDecodeError:
-        # Extract JSON block if model added extra text
         s = full_response.find("{")
         e = full_response.rfind("}") + 1
         if s >= 0 and e > s:
