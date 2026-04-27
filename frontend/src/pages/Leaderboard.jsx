@@ -1,3 +1,4 @@
+import { Component } from "react";
 import { Trophy, Users, Package, Zap } from "lucide-react";
 import { TeamBar } from "../components/TeamBar";
 import { Countdown } from "../components/Countdown";
@@ -5,21 +6,37 @@ import { useQuests } from "../hooks/useQuests";
 import { useRealtime } from "../hooks/useRealtime";
 
 const POINTS_TABLE = [
-  { action: "Check in at quest zone (GPS)",      pts: 50,  note: "Once per day" },
-  { action: "Submit valid pollution photo",       pts: "15–30", note: "low/medium/high" },
-  { action: "AI confidence bonus (>0.8)",        pts: "+5", note: "Per photo" },
-  { action: "First photo at new GPS cluster",    pts: 50,  note: "Discovery bonus" },
-  { action: "3 submissions in one visit",        pts: 75,  note: "Combo!" },
-  { action: "Satellite improvement confirmed",   pts: 200, note: "Whole team, next Mon" },
-  { action: "Recruit a new user",                pts: 100, note: "Via referral" },
+  { action: "Check in at quest zone (GPS)",      pts: 50,       note: "Once per day" },
+  { action: "Submit valid pollution photo",       pts: "15–30",  note: "low/medium/high" },
+  { action: "AI confidence bonus (>0.8)",        pts: "+5",     note: "Per photo" },
+  { action: "First photo at new GPS cluster",    pts: 50,       note: "Discovery bonus" },
+  { action: "3 submissions in one visit",        pts: 75,       note: "Combo!" },
+  { action: "Satellite improvement confirmed",   pts: 200,      note: "Whole team, next Mon" },
+  { action: "Recruit a new user",                pts: 100,      note: "Via referral" },
 ];
 
-export default function Leaderboard() {
-  const { quest, loading } = useQuests();
-  const { scores }        = useRealtime(quest?.id);
+class ErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(e) { return { error: e }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="max-w-screen-xl mx-auto px-4 py-16 text-center">
+          <p className="text-gray-500">Could not load scoreboard.</p>
+          <p className="text-xs text-red-400 mt-2">{this.state.error.message}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
-  const aTotal = scores.A.total_points || 0;
-  const bTotal = scores.B.total_points || 0;
+function LeaderboardInner() {
+  const { quest, loading } = useQuests();
+  const { scores, loading: scoresLoading } = useRealtime(quest?.id);
+
+  const aTotal  = scores?.A?.total_points || 0;
+  const bTotal  = scores?.B?.total_points || 0;
   const winning = aTotal === bTotal ? null : aTotal > bTotal ? "A" : "B";
 
   return (
@@ -46,24 +63,19 @@ export default function Leaderboard() {
         </div>
       )}
 
-      {/* Team bars */}
+      {/* Team bars — single source of truth for scores */}
       <div className="mb-8">
-        {quest
-          ? <TeamBar questId={quest.id} />
-          : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {["A","B"].map(t => <div key={t} className="bg-gray-100 rounded-2xl h-36 animate-pulse" />)}
-            </div>
-        }
+        <TeamBar scores={scores} loading={scoresLoading} />
       </div>
 
       {/* Weekly stats */}
-      {quest && !loading && (
+      {!scoresLoading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Users,   label: "Team A Cleaners",   val: scores.A.participant_count || 0 },
-            { icon: Users,   label: "Team B Cleaners",   val: scores.B.participant_count || 0 },
-            { icon: Package, label: "kg Removed (A)",    val: `${scores.A.kg_removed || 0} kg` },
-            { icon: Package, label: "kg Removed (B)",    val: `${scores.B.kg_removed || 0} kg` },
+            { icon: Users,   label: "Team A Cleaners", val: scores?.A?.participant_count || 0 },
+            { icon: Users,   label: "Team B Cleaners", val: scores?.B?.participant_count || 0 },
+            { icon: Package, label: "kg Removed (A)",  val: `${scores?.A?.kg_removed || 0} kg` },
+            { icon: Package, label: "kg Removed (B)",  val: `${scores?.B?.kg_removed || 0} kg` },
           ].map(({ icon: Icon, label, val }) => (
             <div key={label} className="bg-white rounded-2xl p-4 border border-gray-100 text-center shadow-sm">
               <Icon className="w-5 h-5 text-gray-400 mx-auto mb-2" />
@@ -89,16 +101,12 @@ export default function Leaderboard() {
                 <th className="text-right px-4 py-3 hidden sm:table-cell">Note</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {POINTS_TABLE.map(row => (
                 <tr key={row.action} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-700">{row.action}</td>
-                  <td className="px-4 py-3 text-right font-bold text-teal whitespace-nowrap">
-                    {row.pts}
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-400 text-xs hidden sm:table-cell">
-                    {row.note}
-                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-teal whitespace-nowrap">{row.pts}</td>
+                  <td className="px-4 py-3 text-right text-gray-400 text-xs hidden sm:table-cell">{row.note}</td>
                 </tr>
               ))}
             </tbody>
@@ -106,5 +114,13 @@ export default function Leaderboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Leaderboard() {
+  return (
+    <ErrorBoundary>
+      <LeaderboardInner />
+    </ErrorBoundary>
   );
 }

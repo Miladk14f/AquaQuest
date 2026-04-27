@@ -1,5 +1,3 @@
-import { useRealtime } from "../hooks/useRealtime";
-
 function Bar({ team, data }) {
   const pct  = Math.min(100, data.goal_pct || 0);
   const isA  = team === "A";
@@ -46,9 +44,7 @@ function Bar({ team, data }) {
   );
 }
 
-export function TeamBar({ questId }) {
-  const { scores, loading } = useRealtime(questId);
-
+export function TeamBar({ scores, loading }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -61,8 +57,8 @@ export function TeamBar({ questId }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Bar team="A" data={scores.A} />
-      <Bar team="B" data={scores.B} />
+      <Bar team="A" data={scores.A || {}} />
+      <Bar team="B" data={scores.B || {}} />
     </div>
   );
 }
