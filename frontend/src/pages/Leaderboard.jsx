@@ -1,4 +1,3 @@
-import { Component } from "react";
 import { Trophy, Users, Package, Zap } from "lucide-react";
 import { TeamBar } from "../components/TeamBar";
 import { Countdown } from "../components/Countdown";
@@ -14,22 +13,6 @@ const POINTS_TABLE = [
   { action: "Satellite improvement confirmed",   pts: 200,      note: "Whole team, next Mon" },
   { action: "Recruit a new user",                pts: 100,      note: "Via referral" },
 ];
-
-class ErrorBoundary extends Component {
-  state = { error: null };
-  static getDerivedStateFromError(e) { return { error: e }; }
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="max-w-screen-xl mx-auto px-4 py-16 text-center">
-          <p className="text-gray-500">Could not load scoreboard.</p>
-          <p className="text-xs text-red-400 mt-2">{this.state.error.message}</p>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 function LeaderboardInner() {
   const { quest, loading } = useQuests();
@@ -118,9 +101,5 @@ function LeaderboardInner() {
 }
 
 export default function Leaderboard() {
-  return (
-    <ErrorBoundary>
-      <LeaderboardInner />
-    </ErrorBoundary>
-  );
+  return <LeaderboardInner />;
 }

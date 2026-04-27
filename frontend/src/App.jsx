@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { DemoBanner } from "./components/DemoBanner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { supabaseConfigured } from "./lib/supabase";
 import Home        from "./pages/Home";
 import Quest       from "./pages/Quest";
@@ -16,6 +17,7 @@ export default function App() {
     <BrowserRouter>
       <Navbar />
       {!supabaseConfigured && <DemoBanner />}
+      <ErrorBoundary>
       <main>
         <Routes>
           <Route path="/"            element={<Home />} />
@@ -28,6 +30,7 @@ export default function App() {
           <Route path="/admin"       element={<Admin />} />
         </Routes>
       </main>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

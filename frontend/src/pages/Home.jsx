@@ -4,6 +4,7 @@ import { MapView } from "../components/MapView";
 import { TeamBar } from "../components/TeamBar";
 import { Countdown } from "../components/Countdown";
 import { useQuests } from "../hooks/useQuests";
+import { useRealtime } from "../hooks/useRealtime";
 
 const STATS = [
   { icon: Satellite, label: "Satellite-Verified",  value: "Real Data",   color: "text-ocean" },
@@ -14,6 +15,7 @@ const STATS = [
 
 export default function Home() {
   const { quest, loading } = useQuests();
+  const { scores, loading: scoresLoading } = useRealtime(quest?.id);
 
   return (
     <div className="min-h-screen">
@@ -96,15 +98,7 @@ export default function Home() {
           </div>
         </div>
 
-        {quest ? (
-          <TeamBar questId={quest.id} />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {["A", "B"].map(t => (
-              <div key={t} className="bg-gray-100 rounded-2xl h-36 animate-pulse" />
-            ))}
-          </div>
-        )}
+        <TeamBar scores={scores} loading={scoresLoading} />
       </section>
 
       {/* CTA */}
