@@ -101,9 +101,40 @@ export const api = {
 
   getHotspots: (questId) =>
     withFallback(
-      () => { throw new Error("no direct hotspot endpoint"); },
+      async () => {
+        // Query validated photos from Supabase and cluster them client-side
+        const { data, error } = await supabase
+          .from("pollution_photos")
+          .select("gps_lat,gps_lng,litter_type,severity")
+          .eq("quest_id", questId)
+          .eq("is_valid", true);
+        if (error) throw new Error(error.message);
+        if (!data?.length) return [];
+        // Group nearby photos (simple 50m grid bucketing)
+        const buckets = {};
+        for (const p of data) {
+          const key = `${Math.round(p.gps_lat * 200)}_${Math.round(p.gps_lng * 200)}`;
+          if (!buckets[key]) buckets[key] = { lat: p.gps_lat, lng: p.gps_lng, photos: [] };
+          buckets[key].photos.push(p);
+        }
+        const severityScore = { low: 1, medium: 2, high: 3 };
+        return Object.values(buckets)
+          .filter(b => b.photos.length >= 1)
+          .map(b => {
+            const types = b.photos.map(p => p.litter_type || "mixed");
+            return {
+              lat: b.lat, lng: b.lng,
+              photo_count: b.photos.length,
+              intensity: Math.min(100, b.photos.reduce((s, p) => s + (severityScore[p.severity] || 1), 0) * 10),
+              dominant_litter: types.sort((a, z) =>
+                types.filter(t => t === z).length - types.filter(t => t === a).length
+              )[0],
+            };
+          })
+          .sort((a, b) => b.intensity - a.intensity);
+      },
       `/api/v1/photos/hotspots?quest_id=${questId}`,
-      DEMO_HOTSPOTS,
+      [],  // no fake demo hotspots
     ),
 
   getSatReadings: (week) =>

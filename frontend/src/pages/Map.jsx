@@ -56,7 +56,7 @@ export default function MapPage() {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-amber inline-block" />
-          Photo Hotspot
+          Photo Hotspot {hotspots.length === 0 && <span className="text-gray-400">(none yet this week)</span>}
         </div>
       </div>
 
