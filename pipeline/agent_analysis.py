@@ -1,5 +1,4 @@
-from google import genai
-from google.genai import types
+from openai import OpenAI
 import json
 import os
 
@@ -57,22 +56,25 @@ OUTPUT FORMAT — return ONLY valid JSON, no other text:
 
 
 def analyse_and_select_quests(satellite_data: list) -> dict:
-    client   = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client   = OpenAI(
+        api_key=os.environ["GROQ_API_KEY"],
+        base_url="https://api.groq.com/openai/v1",
+    )
     user_msg = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}"
 
-    print("  [ai] Calling Gemini API...")
+    print("  [ai] Calling Groq API...")
 
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            temperature=0.2,
-            max_output_tokens=1024,
-        ),
-        contents=user_msg,
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user",   "content": user_msg},
+        ],
+        temperature=0.2,
+        max_tokens=1024,
     )
 
-    full_response = response.text
+    full_response = response.choices[0].message.content
     print(f"  [ai] Got response ({len(full_response)} chars)")
 
     try:
