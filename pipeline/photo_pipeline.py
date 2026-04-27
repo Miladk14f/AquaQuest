@@ -1,8 +1,8 @@
-from openai import OpenAI
+from google import genai
+from google.genai import types
 from sklearn.cluster import DBSCAN
 import numpy as np
 import json
-import base64
 import os
 
 PHOTO_PROMPT = """Analyse this photo for water or riverbank pollution in the Netherlands.
@@ -27,34 +27,28 @@ Rules:
 - If in doubt about context, still classify the litter type"""
 
 
-def get_client() -> OpenAI:
-    return OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=os.environ["NVIDIA_API_KEY"],
-    )
-
-
 def classify_photo(image_bytes: bytes, gps_lat: float, gps_lng: float) -> dict:
-    client  = get_client()
-    img_b64 = base64.b64encode(image_bytes).decode()
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     try:
-        response = client.chat.completions.create(
-            model="deepseek-ai/deepseek-v4-pro",
-            messages=[{"role": "user", "content": [
-                {"type": "image_url",
-                 "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
-                {"type": "text", "text": PHOTO_PROMPT},
-            ]}],
-            max_tokens=300,
-            temperature=0.1,
-            stream=False,
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                max_output_tokens=300,
+            ),
+            contents=[
+                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                PHOTO_PROMPT,
+            ],
         )
-        raw = response.choices[0].message.content
+
+        raw = response.text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         result = json.loads(raw)
         result["gps_lat"] = gps_lat
         result["gps_lng"] = gps_lng
         return result
+
     except json.JSONDecodeError:
         return {"is_valid_pollution": False, "rejection_reason": "parse_error",
                 "gps_lat": gps_lat, "gps_lng": gps_lng}
@@ -80,7 +74,6 @@ def build_hotspot_heatmap(validated_photos: list) -> list:
         return []
 
     coords = np.array([[p["gps_lat"], p["gps_lng"]] for p in valid])
-    # ~30 m radius clustering
     db = DBSCAN(eps=0.0003, min_samples=2).fit(coords)
 
     severity_score = {"low": 1, "medium": 2, "high": 3}

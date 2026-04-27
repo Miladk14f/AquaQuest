@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from pipeline.sentinel_fetch     import collect_all_zones, WATERWAYS
 from pipeline.waarneming_fetch   import get_pollution_observations
 from pipeline.copernicus_browser import get_quest_satellite_links

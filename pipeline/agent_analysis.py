@@ -1,4 +1,5 @@
-from openai import OpenAI
+from google import genai
+from google.genai import types
 import json
 import os
 
@@ -55,39 +56,35 @@ OUTPUT FORMAT — return ONLY valid JSON, no other text:
 }"""
 
 
-def get_client() -> OpenAI:
-    return OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=os.environ["NVIDIA_API_KEY"],
-        timeout=60.0,
-    )
-
-
 def analyse_and_select_quests(satellite_data: list) -> dict:
-    client   = get_client()
+    client   = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     user_msg = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}"
 
-    print("  [ai] Calling DeepSeek API (non-streaming, 60s timeout)...")
+    print("  [ai] Calling Gemini API...")
 
-    completion = client.chat.completions.create(
-        model="deepseek-ai/deepseek-r1",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": user_msg},
-        ],
-        temperature=0.2,
-        max_tokens=1024,
-        stream=False,
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            temperature=0.2,
+            max_output_tokens=1024,
+        ),
+        contents=user_msg,
     )
 
-    full_response = completion.choices[0].message.content
+    full_response = response.text
     print(f"  [ai] Got response ({len(full_response)} chars)")
 
     try:
         return json.loads(full_response.strip())
     except json.JSONDecodeError:
-        s = full_response.find("{")
-        e = full_response.rfind("}") + 1
-        if s >= 0 and e > s:
-            return json.loads(full_response[s:e])
-        raise ValueError(f"Could not parse AI response as JSON: {full_response[:500]}")
+        # Strip markdown code fences if model added them
+        cleaned = full_response.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            s = cleaned.find("{")
+            e = cleaned.rfind("}") + 1
+            if s >= 0 and e > s:
+                return json.loads(cleaned[s:e])
+            raise ValueError(f"Could not parse AI response as JSON: {full_response[:500]}")
