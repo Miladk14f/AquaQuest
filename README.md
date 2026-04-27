@@ -341,7 +341,15 @@ The pipeline runs automatically every **Monday at 07:00 UTC**. You can also trig
 
 ## License
 
-MIT © 2026 [Milad](https://github.com/Miladk14f)
+MIT © 2026 — WaterQuest Team
+
+| | Contributor |
+|---|---|
+| [@Miladk14f](https://github.com/Miladk14f) | Milad |
+| [@W0lfik](https://github.com/W0lfik) | W0lfik |
+| [@iliad77](https://github.com/iliad77) | iliad77 |
+| [@BringMeChaos](https://github.com/BringMeChaos) | BringMeChaos |
+| [@anasstyyaa](https://github.com/anasstyyaa) | anasstyyaa |
 
 ---
 
