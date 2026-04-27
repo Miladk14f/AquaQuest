@@ -1,5 +1,4 @@
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from sklearn.cluster import DBSCAN
 import numpy as np
 import json
@@ -28,22 +27,28 @@ Rules:
 
 
 def classify_photo(image_bytes: bytes, gps_lat: float, gps_lng: float) -> dict:
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    import base64
+    client = OpenAI(
+        api_key=os.environ["GROQ_API_KEY"],
+        base_url="https://api.groq.com/openai/v1",
+    )
+    b64 = base64.b64encode(image_bytes).decode()
 
     try:
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            config=types.GenerateContentConfig(
-                temperature=0.1,
-                max_output_tokens=300,
-            ),
-            contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                PHOTO_PROMPT,
-            ],
+        response = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+                    {"type": "text", "text": PHOTO_PROMPT},
+                ],
+            }],
+            temperature=0.1,
+            max_tokens=300,
         )
 
-        raw = response.text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        raw = response.choices[0].message.content.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         result = json.loads(raw)
         result["gps_lat"] = gps_lat
         result["gps_lng"] = gps_lng
