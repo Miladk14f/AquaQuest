@@ -32,7 +32,7 @@ def classify_photo(image_bytes: bytes, gps_lat: float, gps_lng: float) -> dict:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-1.5-flash",
             config=types.GenerateContentConfig(
                 temperature=0.1,
                 max_output_tokens=300,
