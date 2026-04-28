@@ -13,7 +13,7 @@
 
 **WaterQuest identifies the most polluted rivers in the Netherlands using real satellite data — then turns cleanup into a team competition.**
 
-[Live Demo](#) · [How It Works](#how-it-works) · [Quick Start](#quick-start) · [Deploy](#deployment)
+[🌐 Live Site](https://aqua-quest-psi.vercel.app) · [How It Works](#how-it-works) · [Quick Start](#quick-start) · [Deploy](#deployment)
 
 ![WaterQuest Hero](https://placehold.co/1200x500/1D9E75/ffffff?text=WaterQuest+—+Clean+Rivers%2C+Win+the+Week)
 
