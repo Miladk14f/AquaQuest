@@ -1,8 +1,11 @@
 [phases.setup]
-nixPkgs = ["python312", "python312Packages.pip", "gcc"]
+nixPkgs = ["python312", "gcc"]
 
 [phases.install]
-cmds = ["python3 -m pip install --no-cache-dir -r requirements.txt"]
+cmds = [
+  "python3 -m ensurepip --upgrade",
+  "python3 -m pip install --no-cache-dir -r requirements.txt"
+]
 
 [phases.build]
 cmds = []
