@@ -10,7 +10,19 @@ export async function signUpWithEmail(email, password, username) {
   return data;
 }
 
-export async function signInWithEmail(email, password) {
+export async function signInWithEmail(emailOrUsername, password) {
+  let email = emailOrUsername;
+
+  if (!emailOrUsername.includes("@")) {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("email")
+      .eq("username", emailOrUsername)
+      .single();
+    if (error || !data?.email) throw new Error("No account found with that username.");
+    email = data.email;
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data;
