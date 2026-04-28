@@ -149,7 +149,7 @@ export function PhotoUpload({ questId, team }) {
   }
 
   return (
-    <div className="max-w-lg space-y-4">
+    <div className="max-w-lg mx-auto space-y-4">
       {/* Camera */}
       <input ref={inputRef} type="file" accept="image/*" capture="environment"
         onChange={handleFile} className="hidden" />
