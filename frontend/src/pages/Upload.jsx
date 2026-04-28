@@ -15,7 +15,7 @@ export default function Upload() {
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-lg mx-auto px-4 sm:px-6 py-8">
       <div className="flex items-center gap-3 mb-6">
         <Camera className="w-6 h-6 text-teal" />
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Report Pollution</h1>
@@ -24,7 +24,7 @@ export default function Upload() {
       {/* Team selector */}
       <div className="mb-6">
         <p className="text-sm font-medium text-gray-700 mb-3">Which team are you on?</p>
-        <div className="grid grid-cols-2 gap-3 max-w-sm">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { id: "A", label: "🌊 Blue Wave", color: "teal" },
             { id: "B", label: "🔥 Red River", color: "coral" },
@@ -44,7 +44,7 @@ export default function Upload() {
       </div>
 
       {/* Tips */}
-      <div className="bg-ocean-light border border-ocean rounded-2xl p-4 mb-6 max-w-lg">
+      <div className="bg-ocean-light border border-ocean rounded-2xl p-4 mb-6">
         <div className="flex items-start gap-2">
           <Info className="w-4 h-4 text-ocean flex-shrink-0 mt-0.5" />
           <div className="text-sm text-ocean-dark">
@@ -60,12 +60,9 @@ export default function Upload() {
       </div>
 
       {loading ? (
-        <div className="bg-gray-100 rounded-2xl h-64 animate-pulse max-w-lg" />
+        <div className="bg-gray-100 rounded-2xl h-64 animate-pulse" />
       ) : (
-        <PhotoUpload
-          questId={quest?.id || 1}
-          team={team}
-        />
+        <PhotoUpload questId={quest?.id || 1} team={team} />
       )}
     </div>
   );
