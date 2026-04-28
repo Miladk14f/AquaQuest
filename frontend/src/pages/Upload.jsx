@@ -62,7 +62,7 @@ export default function Upload() {
       {loading ? (
         <div className="bg-gray-100 rounded-2xl h-64 animate-pulse" />
       ) : (
-        <PhotoUpload questId={quest?.id || 1} team={team} />
+        <PhotoUpload questId={quest?.id || 1} team={team} quest={quest} />
       )}
     </div>
   );
