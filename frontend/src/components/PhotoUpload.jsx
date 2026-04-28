@@ -58,6 +58,24 @@ export function PhotoUpload({ questId, team }) {
     setResult(null);
   }
 
+  async function compressPhoto(file, maxKB = 800) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        const scale  = Math.min(1, 1200 / Math.max(img.width, img.height));
+        canvas.width  = img.width  * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => resolve(blob || file), "image/jpeg", 0.75);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
   async function handleSubmit() {
     if (!photo || !gps) return;
     if (!supabase) { setError("Supabase not configured."); return; }
@@ -66,12 +84,12 @@ export function PhotoUpload({ questId, team }) {
     setError(null);
 
     try {
-      // 1. Upload photo to Supabase Storage
-      const ext      = photo.name.split(".").pop() || "jpg";
-      const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      // 1. Compress + upload photo to Supabase Storage
+      const compressed = await compressPhoto(photo);
+      const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
       const { error: uploadErr } = await supabase.storage
         .from("pollution-photos")
-        .upload(filename, photo, { contentType: photo.type });
+        .upload(filename, compressed, { contentType: "image/jpeg" });
       if (uploadErr) throw new Error(uploadErr.message);
 
       const { data: { publicUrl } } = supabase.storage
