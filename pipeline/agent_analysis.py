@@ -25,6 +25,7 @@ QUEST SELECTION RULES (all must be satisfied):
        ndci_mean > 0.10 = algae scum (can be skimmed from surface)
   6. Boost priority if citizen_confirmed = true (ground-truth verified)
   7. Explain your selection with specific satellite numbers
+  8. NEVER repeat a zone used in the last 3 weeks — rotate across all available zones
 
 OUTPUT FORMAT — return ONLY valid JSON, no other text:
 {
@@ -55,12 +56,15 @@ OUTPUT FORMAT — return ONLY valid JSON, no other text:
 }"""
 
 
-def analyse_and_select_quests(satellite_data: list) -> dict:
+def analyse_and_select_quests(satellite_data: list, recent_zones: list = None) -> dict:
     client   = OpenAI(
         api_key=os.environ["GROQ_API_KEY"],
         base_url="https://api.groq.com/openai/v1",
     )
-    user_msg = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}"
+    avoid_note = ""
+    if recent_zones:
+        avoid_note = f"\n\nIMPORTANT: These zones were used in the last 3 weeks — do NOT select them again: {', '.join(recent_zones)}. Choose different zones to give citizens variety."
+    user_msg = f"Satellite readings:\n{json.dumps(satellite_data, indent=2)}{avoid_note}"
 
     print("  [ai] Calling Groq API...")
 

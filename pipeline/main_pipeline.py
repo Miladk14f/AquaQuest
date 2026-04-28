@@ -101,7 +101,24 @@ def run_weekly_pipeline() -> dict | None:
     enriched = [build_enriched_zone(z) for z in sat_data]
 
     print("\nStep 3: Sending enriched data to DeepSeek AI for quest selection...")
-    quest = analyse_and_select_quests(enriched)
+    # Fetch recent zones to avoid repeating them
+    recent_zones = []
+    if _supabase:
+        try:
+            rows = _supabase.table("weekly_quests") \
+                .select("quest_a, quest_b") \
+                .order("created_at", desc=True) \
+                .limit(3) \
+                .execute()
+            for row in rows.data:
+                if row.get("quest_a"): recent_zones.append(row["quest_a"].get("zone"))
+                if row.get("quest_b"): recent_zones.append(row["quest_b"].get("zone"))
+            recent_zones = [z for z in recent_zones if z]
+            if recent_zones:
+                print(f"  Recent zones to avoid: {recent_zones}")
+        except Exception as e:
+            print(f"  [db] Could not fetch recent zones: {e}")
+    quest = analyse_and_select_quests(enriched, recent_zones=recent_zones)
 
     print(f"\nStep 4: Quest selected:")
     print(f"  Quest A → {quest['quest_a']['zone']} ({quest['quest_a']['city']})")
