@@ -26,8 +26,8 @@ jobs:
       - name: Run weekly pipeline
         run: python -m pipeline.main_pipeline
         env:
-          COPERNICUS_CLIENT_ID:     ${{ secrets.SENTINELHUB_CLIENT_ID }}
-          COPERNICUS_CLIENT_SECRET: ${{ secrets.SENTINELHUB_CLIENT_SECRET }}
+          COPERNICUS_CLIENT_ID:     ${{ secrets.COPERNICUS_CLIENT_ID }}
+          COPERNICUS_CLIENT_SECRET: ${{ secrets.COPERNICUS_CLIENT_SECRET }}
           SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY:      ${{ secrets.SUPABASE_SERVICE_KEY }}
           GROQ_API_KEY:              ${{ secrets.GROQ_API_KEY }}
