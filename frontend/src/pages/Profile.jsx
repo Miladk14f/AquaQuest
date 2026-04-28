@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Trophy, Camera, Droplets, LogOut, Medal, Star } from "lucide-react";
-import { useAuth } from "../hooks/useAuth.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 import { signOut, getLeaderboard } from "../lib/auth.js";
 import { supabase } from "../lib/supabase.js";
 

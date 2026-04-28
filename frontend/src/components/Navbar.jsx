@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Menu, X, Droplets, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 const links = [
   { to: "/",            label: "Home" },

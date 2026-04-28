@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, MapPin, Send, X, CheckCircle, AlertCircle } from "lucide-react";
 import { api } from "../lib/api";
-import { useAuth } from "../hooks/useAuth.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 import { awardPoints } from "../lib/auth.js";
 
 const LITTER_TYPES = [

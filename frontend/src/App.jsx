@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { DemoBanner } from "./components/DemoBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "./hooks/useAuth.jsx";
 import { supabaseConfigured } from "./lib/supabase";
 import Home        from "./pages/Home";
 import Quest       from "./pages/Quest";
