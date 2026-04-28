@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { DemoBanner } from "./components/DemoBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AuthProvider } from "./hooks/useAuth";
 import { supabaseConfigured } from "./lib/supabase";
 import Home        from "./pages/Home";
 import Quest       from "./pages/Quest";
@@ -11,26 +12,32 @@ import Upload      from "./pages/Upload";
 import Impact      from "./pages/Impact";
 import About       from "./pages/About";
 import Admin       from "./pages/Admin";
+import Login       from "./pages/Login";
+import Profile     from "./pages/Profile";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      {!supabaseConfigured && <DemoBanner />}
-      <ErrorBoundary>
-      <main>
-        <Routes>
-          <Route path="/"            element={<Home />} />
-          <Route path="/quest"       element={<Quest />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/map"         element={<MapPage />} />
-          <Route path="/upload"      element={<Upload />} />
-          <Route path="/impact"      element={<Impact />} />
-          <Route path="/about"       element={<About />} />
-          <Route path="/admin"       element={<Admin />} />
-        </Routes>
-      </main>
-      </ErrorBoundary>
+      <AuthProvider>
+        <Navbar />
+        {!supabaseConfigured && <DemoBanner />}
+        <ErrorBoundary>
+          <main>
+            <Routes>
+              <Route path="/"            element={<Home />} />
+              <Route path="/quest"       element={<Quest />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/map"         element={<MapPage />} />
+              <Route path="/upload"      element={<Upload />} />
+              <Route path="/impact"      element={<Impact />} />
+              <Route path="/about"       element={<About />} />
+              <Route path="/admin"       element={<Admin />} />
+              <Route path="/login"       element={<Login />} />
+              <Route path="/profile"     element={<Profile />} />
+            </Routes>
+          </main>
+        </ErrorBoundary>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

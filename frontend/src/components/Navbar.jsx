@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Menu, X, Droplets } from "lucide-react";
+import { Menu, X, Droplets, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
 
 const links = [
   { to: "/",            label: "Home" },
@@ -13,8 +14,12 @@ const links = [
 ];
 
 export function Navbar() {
-  const [open, setOpen]  = useState(false);
-  const { pathname }     = useLocation();
+  const [open, setOpen] = useState(false);
+  const { pathname }    = useLocation();
+  const { user, profile } = useAuth() || {};
+
+  const avatar = profile?.avatar_url || null;
+  const initial = (profile?.username?.[0] || user?.email?.[0] || "?").toUpperCase();
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
@@ -39,6 +44,24 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
+
+            {/* Auth button */}
+            <Link
+              to={user ? "/profile" : "/login"}
+              className={`ml-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+                transition-colors
+                ${pathname === "/profile" || pathname === "/login"
+                  ? "bg-teal-light text-teal-dark"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
+            >
+              {user
+                ? avatar
+                  ? <img src={avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  : <div className="w-6 h-6 rounded-full bg-teal text-white text-xs flex items-center justify-center font-bold">{initial}</div>
+                : <User className="w-4 h-4" />
+              }
+              {user ? (profile?.username || "Profile") : "Sign in"}
+            </Link>
           </div>
 
           {/* Mobile hamburger */}
@@ -61,8 +84,7 @@ export function Navbar() {
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium mb-1
-                min-h-[44px]
+              className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium mb-1 min-h-[44px]
                 ${pathname === l.to
                   ? "bg-teal-light text-teal-dark"
                   : "text-gray-700 hover:bg-gray-50"}`}
@@ -70,6 +92,20 @@ export function Navbar() {
               {l.label}
             </Link>
           ))}
+          <Link
+            to={user ? "/profile" : "/login"}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-medium mb-1
+              min-h-[44px] text-gray-700 hover:bg-gray-50"
+          >
+            {user
+              ? avatar
+                ? <img src={avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+                : <div className="w-5 h-5 rounded-full bg-teal text-white text-xs flex items-center justify-center font-bold">{initial}</div>
+              : <User className="w-4 h-4" />
+            }
+            {user ? (profile?.username || "Profile") : "Sign in"}
+          </Link>
         </div>
       )}
     </nav>

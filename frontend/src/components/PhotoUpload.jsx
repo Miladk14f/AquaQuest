@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, MapPin, Send, X, CheckCircle, AlertCircle } from "lucide-react";
 import { api } from "../lib/api";
+import { useAuth } from "../hooks/useAuth.js";
+import { awardPoints } from "../lib/auth.js";
 
 const LITTER_TYPES = [
   { id: "plastic_bottles", label: "Bottles",  emoji: "🍶" },
@@ -13,6 +15,7 @@ const LITTER_TYPES = [
 ];
 
 export function PhotoUpload({ questId, team }) {
+  const { user, refreshProfile } = useAuth() || {};
   const [photo,    setPhoto]   = useState(null);
   const [preview,  setPreview] = useState(null);
   const [gps,      setGps]     = useState(null);
@@ -60,6 +63,10 @@ export function PhotoUpload({ questId, team }) {
     try {
       const data = await api.uploadPhoto(form);
       setResult(data);
+      if (data?.is_valid_pollution && data?.points && user) {
+        await awardPoints(user.id, questId, "photo_upload", data.points).catch(() => {});
+        refreshProfile?.();
+      }
     } catch (err) {
       setError(err.message);
     } finally {
