@@ -17,22 +17,21 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Run weekly pipeline
-        run: python pipeline/main_pipeline.py
+        run: python -m pipeline.main_pipeline
         env:
-          NVIDIA_API_KEY:           ${{ secrets.NVIDIA_API_KEY }}
-          COPERNICUS_CLIENT_ID:     ${{ secrets.COPERNICUS_CLIENT_ID }}
-          COPERNICUS_CLIENT_SECRET: ${{ secrets.COPERNICUS_CLIENT_SECRET }}
-          SUPABASE_URL:             ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY:     ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SENTINELHUB_CLIENT_ID:     ${{ secrets.SENTINELHUB_CLIENT_ID }}
+          SENTINELHUB_CLIENT_SECRET: ${{ secrets.SENTINELHUB_CLIENT_SECRET }}
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:      ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GROQ_API_KEY:              ${{ secrets.GROQ_API_KEY }}
 
       - name: Notify on failure
         if: failure()
-        run: |
-          echo "::error::WaterQuest pipeline failed. Check logs and re-run manually."
+        run: echo "::error::WaterQuest pipeline failed — check logs and re-run manually."
