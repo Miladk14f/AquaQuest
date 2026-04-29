@@ -36,7 +36,7 @@ export default function Login() {
         navigate("/profile");
       } else {
         await signUpWithEmail(email, password, username);
-        setDone(true);
+        navigate("/profile");
       }
     } catch (err) {
       setError(err.message);
