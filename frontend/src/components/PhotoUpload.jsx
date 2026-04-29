@@ -17,12 +17,6 @@ const LITTER_TYPES = [
   { id: "algae_bloom",     label: "Algae",    emoji: "🟢" },
 ];
 
-const SEVERITIES = [
-  { id: "low",    label: "Low",    pts: 15 },
-  { id: "medium", label: "Medium", pts: 20 },
-  { id: "high",   label: "High",   pts: 30 },
-];
-
 // Haversine distance in km
 function distanceKm(lat1, lng1, lat2, lng2) {
   const R  = 6371;
@@ -68,7 +62,7 @@ export function PhotoUpload({ questId, team, quest }) {
   const [preview,    setPreview]    = useState(null);
   const [gps,        setGps]        = useState(null);
   const [litterType, setLitterType] = useState("mixed");
-  const [severity,   setSeverity]   = useState("medium");
+  const severity = "medium";
   const [step,       setStep]       = useState(0); // 0=idle,1=loc,2=ai,3=done
   const [result,     setResult]     = useState(null);
   const [error,      setError]      = useState(null);

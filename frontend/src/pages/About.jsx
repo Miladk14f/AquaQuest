@@ -5,8 +5,6 @@ const INDICES = [
   { name: "FDI",       formula: "B8 − (B6 + (B11−B6) × factor)",               detects: "Floating plastic / litter", threshold: ">0.02 = confirmed from space" },
   { name: "Turbidity", formula: "B4 / B3",                                       detects: "Sediment / runoff",         threshold: ">1.5 = heavy contamination" },
   { name: "NDWI",      formula: "(B3 − B8) / (B3 + B8)",                       detects: "Water pixels mask",         threshold: ">0.1 = water" },
-  { name: "NDMI",      formula: "(B8 − B11) / (B8 + B11)",                     detects: "Crop water stress",         threshold: "Upstream irrigation runoff" },
-  { name: "BSI",       formula: "(B11+B4−B8−B2) / (B11+B4+B8+B2)",            detects: "Bare soil / erosion",       threshold: "Pre-runoff indicator" },
 ];
 
 const DATA_SOURCES = [

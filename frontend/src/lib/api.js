@@ -1,5 +1,5 @@
 import { supabase, supabaseConfigured } from "./supabase.js";
-import { DEMO_QUEST, DEMO_SCORES, DEMO_HOTSPOTS, DEMO_HISTORY } from "./demo.js";
+import { DEMO_QUEST, DEMO_SCORES, DEMO_HISTORY } from "./demo.js";
 
 const BASE = import.meta.env.VITE_API_URL || "";
 

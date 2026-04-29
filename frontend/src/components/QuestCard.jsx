@@ -1,4 +1,4 @@
-import { MapPin, Satellite, AlertTriangle, CheckCircle, ExternalLink } from "lucide-react";
+import { MapPin, Satellite, CheckCircle, ExternalLink } from "lucide-react";
 
 const POLLUTION_LABELS = {
   floating_plastic: "Floating Plastic",
