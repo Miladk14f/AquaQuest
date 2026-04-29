@@ -23,12 +23,12 @@
 
 ## What Is WaterQuest?
 
-Every Monday morning, an automated pipeline fetches **Copernicus Sentinel-2 satellite imagery** for 6 waterway zones across the Netherlands. It computes algae bloom, floating plastic, and turbidity indices — then feeds the data to a **DeepSeek AI model** that selects the two most impactful cleanup locations for the week.
+Every Monday morning, an automated pipeline fetches **Copernicus Sentinel-2 satellite imagery** for 6 waterway zones across the Netherlands. It computes algae bloom, floating plastic, and turbidity indices — then feeds the data to a **Groq AI model (Llama 3.3 70B)** that selects the two most impactful cleanup locations for the week.
 
-Citizens join a team, travel to a quest zone, photograph and remove garbage, and earn live points on a real-time leaderboard. The following Monday, new satellite imagery confirms whether the cleanup measurably improved water quality — **closing a full satellite-verified feedback loop.**
+Citizens create an account, join a team, travel to a quest zone, photograph and remove garbage, and earn live points on a real-time leaderboard. The following Monday, new satellite imagery confirms whether the cleanup measurably improved water quality — **closing a full satellite-verified feedback loop.**
 
 > *All infrastructure cost for a hackathon demo: **€0***
-> Copernicus data is EU open data · AI via NVIDIA NIM free tier · Hosting via Vercel + Railway + Supabase free tiers
+> Copernicus data is EU open data · AI via Groq free tier · Hosting via Vercel + Railway + Supabase free tiers
 
 ---
 
@@ -51,8 +51,8 @@ Monday 07:00 UTC
              │  Enriched zone data
              ▼
 ┌─────────────────────────┐
-│  DeepSeek-V4-Pro AI     │  ← Selects 2 quest zones via strict rules
-│  NVIDIA NIM endpoint    │
+│  Groq AI (Llama 3.3)    │  ← Selects 2 quest zones via strict rules
+│  Rotates zones weekly   │
 └────────────┬────────────┘
              │  Quest A + Quest B
              ▼
@@ -74,12 +74,14 @@ Monday 07:00 UTC
 | Feature | Description |
 |---|---|
 | 🛰️ **Satellite Quest Selection** | Real Sentinel-2 data selects the two most polluted zones every Monday |
-| 🤖 **AI Photo Classification** | DeepSeek-V4-Pro classifies litter type, severity, and confirms validity |
+| 🤖 **AI Photo Classification** | Groq Llama 4 Scout vision model classifies litter type, severity, and confirms validity |
+| 👤 **User Accounts** | Email/password + Google OAuth sign-in, user profiles with stats |
 | 🏆 **Live Team Competition** | Blue Wave vs Red River — real-time score updates via Supabase WebSocket |
-| 🗺️ **Interactive Pollution Map** | Leaflet.js map with satellite hotspot layer and user photo heatmap |
-| 📸 **Mobile Camera Upload** | Native camera on any phone, GPS auto-tagged, instant AI feedback |
+| 🗺️ **Interactive Pollution Map** | Leaflet.js map with satellite hotspot layer and photo heatmap |
+| 📸 **Mobile Camera Upload** | Native camera on any phone, GPS-verified within quest zone, instant AI feedback |
 | ✅ **Satellite-Verified Impact** | Before/after Sentinel-2 images prove the cleanup worked |
 | ⏰ **Fully Automated Pipeline** | GitHub Actions cron — zero manual work every week |
+| 🔄 **Weekly Zone Rotation** | AI avoids repeating the last 3 weeks of quest zones automatically |
 | 📱 **Mobile-First Design** | Full functionality on any screen size, 44px touch targets throughout |
 
 ---
@@ -118,10 +120,12 @@ All data is freely available via the [Copernicus Data Space](https://dataspace.c
 |---|---|
 | **Frontend** | React 18 + Vite + Tailwind CSS v4 |
 | **Map** | Leaflet.js + OpenStreetMap (no API key needed) |
+| **Auth** | Supabase Auth (email/password + Google OAuth) |
 | **Real-time** | Supabase Realtime (WebSocket) |
-| **Backend** | Python FastAPI |
+| **Backend** | Python FastAPI (Railway, europe-west4 Amsterdam) |
 | **Database** | PostgreSQL via Supabase |
-| **AI** | NVIDIA NIM — DeepSeek-V4-Pro |
+| **AI — Quest Selection** | Groq API — Llama 3.3 70B Versatile |
+| **AI — Photo Classification** | Groq API — Llama 4 Scout 17B (vision) via Supabase Edge Function |
 | **Satellite** | Copernicus Sentinel Hub Python SDK |
 | **Scheduling** | GitHub Actions cron (Monday 07:00 UTC) |
 | **Hosting** | Vercel (frontend) + Railway (backend) |
@@ -132,10 +136,10 @@ All data is freely available via the [Copernicus Data Space](https://dataspace.c
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - Node.js 18+
 - A Supabase project (free tier)
-- NVIDIA NIM API key (free tier)
+- Groq API key (free tier — [console.groq.com](https://console.groq.com))
 - Copernicus Data Space OAuth credentials (free)
 
 ### 1. Clone & configure
@@ -159,9 +163,8 @@ Create a storage bucket named `pollution-photos` and set it to **public**.
 ### 3. Start the backend
 
 ```bash
-# Create and activate virtual environment
 python -m venv .venv
-.venv/Scripts/activate    # Windows
+.venv\Scripts\activate    # Windows
 # source .venv/bin/activate  # Mac/Linux
 
 pip install -r requirements.txt
@@ -199,13 +202,16 @@ AquaQuest/
 ├── main.py                        # FastAPI entry point
 ├── requirements.txt
 ├── schema.sql                     # Supabase database schema
+├── nixpacks.toml                  # Railway build configuration
+├── railway.json                   # Railway deploy configuration
+├── Procfile                       # Fallback start command
 ├── .env.example                   # API key template (safe to commit)
 │
 ├── pipeline/
 │   ├── sentinel_fetch.py          # Copernicus Sentinel-2 data + indices
 │   ├── waarneming_fetch.py        # Citizen pollution reports API
 │   ├── copernicus_browser.py      # Satellite view URL generator
-│   ├── agent_analysis.py          # DeepSeek AI quest selector
+│   ├── agent_analysis.py          # Groq AI quest selector (zone rotation)
 │   ├── photo_pipeline.py          # Photo classifier + hotspot clustering
 │   └── main_pipeline.py           # Weekly orchestrator
 │
@@ -216,12 +222,17 @@ AquaQuest/
 │       ├── scores.py              # GET /api/v1/scores/live
 │       └── admin.py               # POST /api/v1/admin/run-pipeline
 │
+├── supabase/
+│   └── functions/
+│       └── classify-photo/
+│           └── index.ts           # Deno edge function — Groq vision AI
+│
 ├── frontend/
 │   └── src/
-│       ├── pages/                 # Home, Quest, Leaderboard, Map, Upload, Impact, About, Admin
-│       ├── components/            # Navbar, TeamBar, MapView, PhotoUpload, QuestCard, Countdown
-│       ├── hooks/                 # useQuests, useRealtime, useGeolocation
-│       └── lib/                   # supabase.js, api.js, demo.js
+│       ├── pages/                 # Home, Quest, Leaderboard, Map, Upload, Impact, About, Admin, Login, Profile
+│       ├── components/            # Navbar, TeamBar, MapView, PhotoUpload, QuestCard, Countdown, ErrorBoundary
+│       ├── hooks/                 # useQuests, useRealtime, useGeolocation, useAuth
+│       └── lib/                   # supabase.js, api.js, demo.js, auth.js
 │
 └── .github/
     └── workflows/
@@ -236,7 +247,7 @@ Copy `.env.example` to `.env` and fill in your values. **Never commit `.env`** �
 
 | Variable | Description | Where to get it |
 |---|---|---|
-| `NVIDIA_API_KEY` | NVIDIA NIM API key | [build.nvidia.com](https://build.nvidia.com) |
+| `GROQ_API_KEY` | Groq API key for AI quest selection + photo classification | [console.groq.com](https://console.groq.com) |
 | `COPERNICUS_CLIENT_ID` | Copernicus OAuth client ID | [dataspace.copernicus.eu](https://dataspace.copernicus.eu) |
 | `COPERNICUS_CLIENT_SECRET` | Copernicus OAuth secret | Same as above |
 | `SUPABASE_URL` | Your Supabase project URL | [supabase.com](https://supabase.com) → Settings → API |
@@ -244,6 +255,7 @@ Copy `.env.example` to `.env` and fill in your values. **Never commit `.env`** �
 | `SUPABASE_SERVICE_KEY` | Service role key (backend) | Same as above |
 | `SECRET_KEY` | JWT secret — run `openssl rand -hex 32` | Generated locally |
 | `ADMIN_PASSWORD` | Password for `/admin` dashboard | Choose your own |
+| `FRONTEND_URL` | Frontend URL for CORS (`https://aqua-quest-psi.vercel.app` in prod) | — |
 | `VITE_SUPABASE_URL` | Same as `SUPABASE_URL` (Vite prefix) | Same as above |
 | `VITE_SUPABASE_ANON_KEY` | Same as `SUPABASE_ANON_KEY` | Same as above |
 | `VITE_API_URL` | Backend URL (`http://localhost:8000` locally) | — |
@@ -263,26 +275,35 @@ vercel --prod
 Set environment variables in **Vercel Dashboard → Project → Settings → Environment Variables**:
 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL` (your Railway URL)
 
-### Backend → Railway
+### Backend → Railway (europe-west4 Amsterdam)
 
 1. Push to GitHub
 2. [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Set start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-4. Add all env vars from the table above
+3. Select region: **Europe West (Amsterdam)**
+4. Add env vars (see table above — Railway needs the non-`VITE_` ones)
+5. Railway reads `railway.json` and `nixpacks.toml` automatically
 
 ### Automated Pipeline → GitHub Actions
 
 Add your secrets at **Repository → Settings → Secrets and variables → Actions**:
 
 ```
-NVIDIA_API_KEY
+GROQ_API_KEY
 COPERNICUS_CLIENT_ID
 COPERNICUS_CLIENT_SECRET
 SUPABASE_URL
 SUPABASE_SERVICE_KEY
 ```
 
-The pipeline runs automatically every **Monday at 07:00 UTC**. You can also trigger it manually from the Actions tab.
+The pipeline runs automatically every **Monday at 07:00 UTC**. Quest zones rotate automatically — the AI checks the last 3 weeks and never repeats a location. You can also trigger it manually from the Actions tab.
+
+### Supabase Auth Setup
+
+1. Dashboard → Auth → URL Configuration:
+   - Site URL: `https://aqua-quest-psi.vercel.app`
+   - Redirect URLs: `https://aqua-quest-psi.vercel.app/**`
+2. For Google OAuth: Dashboard → Auth → Providers → Google → add Client ID + Secret
+3. For email delivery in production: configure a custom SMTP provider (e.g. Resend)
 
 ---
 
@@ -310,10 +331,12 @@ The pipeline runs automatically every **Monday at 07:00 UTC**. You can also trig
 | `/quest` | **This Week's Quest** | Quest A + B cards, satellite evidence, join team |
 | `/leaderboard` | **Live Scoreboard** | Real-time team progress, points table, weekly stats |
 | `/map` | **Pollution Map** | Leaflet map with satellite hotspot + photo heatmap layers |
-| `/upload` | **Report Pollution** | Mobile camera upload, GPS tag, AI classification result |
+| `/upload` | **Report Pollution** | Mobile camera upload, GPS-verified, AI classification result |
 | `/impact` | **Impact** | Before/after satellite images, improvement %, quest history |
 | `/about` | **About & Science** | Spectral indices explained, data sources, FAQ |
 | `/admin` | **Admin** | Password-protected pipeline trigger and zone data preview |
+| `/login` | **Sign In / Sign Up** | Email/password or Google OAuth |
+| `/profile` | **Profile** | Personal stats, point history, leaderboard rank |
 
 ---
 
@@ -334,8 +357,9 @@ The pipeline runs automatically every **Monday at 07:00 UTC**. You can also trig
 - All API keys are stored in `.env` (gitignored) and platform environment variables — never in source code
 - `.env.example` contains only placeholder text — safe to commit
 - Admin dashboard requires HTTP Basic Auth with a password set via `ADMIN_PASSWORD` env var
-- Photo uploads are validated for GPS bounds (Netherlands only) and file size (10 MB max)
-- Supabase Row Level Security can be enabled for production use
+- Photo uploads are GPS-validated (Netherlands bounds) and size-limited (10 MB max)
+- Supabase Auth handles all user authentication with Row Level Security
+- Google OAuth redirect URIs locked to the production Vercel domain
 
 ---
 
