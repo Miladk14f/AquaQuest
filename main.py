@@ -13,8 +13,10 @@ app = FastAPI(title="WaterQuest API", version="1.0.0")
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:4173",
-    os.environ.get("FRONTEND_URL", "https://your-app.vercel.app"),
+    "https://aqua-quest-psi.vercel.app",
+    os.environ.get("FRONTEND_URL", ""),
 ]
+ALLOWED_ORIGINS = [o for o in ALLOWED_ORIGINS if o]
 
 app.add_middleware(
     CORSMiddleware,
