@@ -1,3 +1,6 @@
+[variables]
+LD_LIBRARY_PATH = "/root/.nix-profile/lib"
+
 [phases.setup]
 nixPkgs = ["python312", "gcc"]
 
