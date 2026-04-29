@@ -7,6 +7,9 @@ export async function signUpWithEmail(email, password, username) {
     options: { data: { full_name: username } },
   });
   if (error) throw error;
+  if (data.user?.identities?.length === 0) {
+    throw new Error("An account with this email already exists. Please sign in instead.");
+  }
   return data;
 }
 
