@@ -108,8 +108,9 @@ export function PhotoUpload({ questId, team, quest }) {
 
     // ── Step 1: GPS proximity check ──────────────────────────────────────────
     setStep(1);
+    const testMode = localStorage.getItem("wq_test_mode") === "1";
     const zoneData = team === "A" ? quest?.quest_a : quest?.quest_b;
-    if (zoneData?.lat && zoneData?.lng) {
+    if (!testMode && zoneData?.lat && zoneData?.lng) {
       const dist = distanceKm(gps.lat, gps.lng, zoneData.lat, zoneData.lng);
       if (dist > MAX_DIST_KM) {
         setError(`You're ${dist.toFixed(1)} km from the ${zoneData.zone} quest zone. Get within ${MAX_DIST_KM} km to submit.`);
@@ -205,9 +206,15 @@ export function PhotoUpload({ questId, team, quest }) {
   }
 
   const isSubmitting = step > 0;
+  const testMode = localStorage.getItem("wq_test_mode") === "1";
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
+      {testMode && (
+        <div className="bg-amber-50 border border-amber rounded-xl px-3 py-2 text-xs text-amber-800 font-medium">
+          🧪 Test mode active — GPS check bypassed
+        </div>
+      )}
       {/* Progress indicator during submission */}
       {isSubmitting && (
         <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Play, RefreshCw, CheckCircle, AlertCircle, Database } from "lucide-react";
+import { Shield, Play, RefreshCw, CheckCircle, AlertCircle, Database, FlaskConical } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -36,6 +36,7 @@ export default function Admin() {
   const [running,   setRunning]   = useState(false);
   const [pipeResult, setPipeResult] = useState(null);
   const [pipeError,  setPipeError]  = useState(null);
+  const [testMode,   setTestMode]   = useState(() => localStorage.getItem("wq_test_mode") === "1");
 
   useEffect(() => {
     if (!authed) return;
@@ -185,6 +186,27 @@ export default function Admin() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Test mode toggle */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-8">
+        <h2 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+          <FlaskConical className="w-5 h-5 text-amber" /> Test Mode
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Bypass GPS proximity check on photo uploads. Use this to test AI classification from any location.
+        </p>
+        <button
+          onClick={() => {
+            const next = !testMode;
+            setTestMode(next);
+            localStorage.setItem("wq_test_mode", next ? "1" : "0");
+          }}
+          className={`flex items-center gap-2 font-semibold px-5 py-2.5 rounded-xl min-h-[44px] transition-colors
+            ${testMode ? "bg-amber text-white hover:bg-amber/80" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+        >
+          {testMode ? "✅ Test Mode ON — GPS check disabled" : "⬜ Test Mode OFF — click to enable"}
+        </button>
       </div>
 
       {/* Zone readings */}
