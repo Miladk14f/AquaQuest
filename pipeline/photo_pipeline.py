@@ -1,6 +1,4 @@
 from openai import OpenAI
-from sklearn.cluster import DBSCAN
-import numpy as np
 import json
 import os
 
@@ -74,6 +72,9 @@ def calculate_points(result: dict) -> int:
 
 
 def build_hotspot_heatmap(validated_photos: list) -> list:
+    import numpy as np
+    from sklearn.cluster import DBSCAN
+
     valid = [p for p in validated_photos if p.get("is_valid_pollution")]
     if len(valid) < 3:
         return []
