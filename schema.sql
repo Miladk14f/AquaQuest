@@ -61,3 +61,84 @@ CREATE TABLE IF NOT EXISTS satellite_readings (
 -- Enable real-time on team_scores
 -- After running this SQL, go to:
 -- Dashboard → Database → Replication → team_scores → toggle ON
+
+-- ── User profiles (one row per auth.users row) ─────────────────────────────
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id               UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username         TEXT UNIQUE,
+  email            TEXT,
+  avatar_url       TEXT,
+  total_points     INT DEFAULT 0,
+  photos_submitted INT DEFAULT 0,
+  cleanups_attended INT DEFAULT 0,
+  created_at       TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read all profiles"  ON user_profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile" ON user_profiles FOR UPDATE USING (auth.uid() = id);
+
+-- ── Point events log ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_point_events (
+  id         SERIAL PRIMARY KEY,
+  user_id    UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  quest_id   INT  REFERENCES weekly_quests(id),
+  event_type TEXT NOT NULL,
+  points     INT  NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE user_point_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read own events"   ON user_point_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own events" ON user_point_events FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ── Rankings view (used by leaderboard) ────────────────────────────────────
+DROP VIEW IF EXISTS user_rankings;
+CREATE VIEW user_rankings AS
+SELECT
+  id,
+  username,
+  email,
+  avatar_url,
+  total_points,
+  photos_submitted,
+  cleanups_attended,
+  RANK() OVER (ORDER BY total_points DESC) AS rank
+FROM user_profiles
+WHERE total_points > 0;
+
+-- ── Auto-create profile on signup ──────────────────────────────────────────
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, email, username)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ── RPC: atomically increment points + counters ────────────────────────────
+CREATE OR REPLACE FUNCTION increment_user_points(
+  p_user_id UUID,
+  p_points  INT,
+  p_photos  INT DEFAULT 0
+)
+RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE public.user_profiles
+  SET
+    total_points     = total_points + p_points,
+    photos_submitted = photos_submitted + p_photos
+  WHERE id = p_user_id;
+END;
+$$;
