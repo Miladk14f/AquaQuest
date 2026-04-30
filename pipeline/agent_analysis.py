@@ -25,7 +25,7 @@ QUEST SELECTION RULES (all must be satisfied):
        ndci_mean > 0.10 = algae scum (can be skimmed from surface)
   6. Boost priority if citizen_confirmed = true (ground-truth verified)
   7. Explain your selection with specific satellite numbers
-  8. NEVER repeat a zone used in the last 3 weeks — rotate across all available zones
+  8. Prefer not to repeat a zone used last week — but if no alternatives exist, pick the best zone anyway. NEVER return lat=0 or lng=0.
 
 OUTPUT FORMAT — return ONLY valid JSON, no other text:
 {

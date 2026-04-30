@@ -108,7 +108,7 @@ def run_weekly_pipeline() -> dict | None:
             rows = _supabase.table("weekly_quests") \
                 .select("quest_a, quest_b") \
                 .order("created_at", desc=True) \
-                .limit(3) \
+                .limit(1) \
                 .execute()
             for row in rows.data:
                 if row.get("quest_a"): recent_zones.append(row["quest_a"].get("zone"))
